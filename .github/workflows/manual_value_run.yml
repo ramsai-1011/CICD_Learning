@@ -3,14 +3,19 @@ name: Manual Value Runner
 on:
   workflow_dispatch:
     inputs:
-      start_value:
-        description: Value to pass into Python
+      a:
+        description: First value
         required: true
-        default: '10'
+        default: '40'
+        type: number
+      b:
+        description: Second value
+        required: true
+        default: '60'
         type: number
 
 jobs:
-  manual-demo:
+  validate-inputs:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,12 +33,16 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install -e .
 
-      - name: Run script with input value
+      - name: Validate a + b = 100
         run: |
-          python -m mlops_project.variable_flow --value "${{ inputs.start_value }}" --output-file artifacts/manual_updated_value.txt
+          python -m mlops_project.variable_flow --a "${{ inputs.a }}" --b "${{ inputs.b }}" --output-file artifacts/validated_pair.txt
 
-      - name: Reuse the new value in a second run
+  production-promotion:
+    needs: validate-inputs
+    if: success()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Promote to production
         run: |
-          UPDATED_VALUE=$(cat artifacts/manual_updated_value.txt)
-          echo "New value from first run: $UPDATED_VALUE"
-          python -m mlops_project.variable_flow --value "$UPDATED_VALUE" --output-file artifacts/manual_updated_value.txt
+          echo "Validation passed. Change is approved for production promotion."
