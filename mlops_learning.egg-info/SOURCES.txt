@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+mlops_learning.egg-info/PKG-INFO
+mlops_learning.egg-info/SOURCES.txt
+mlops_learning.egg-info/dependency_links.txt
+mlops_learning.egg-info/requires.txt
+mlops_learning.egg-info/top_level.txt
+mlops_project/__init__.py
+mlops_project/train.py
+tests/test_train.py
