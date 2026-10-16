@@ -34,5 +34,17 @@ jobs:
           test -f requirements.txt
           echo "Project structure looks valid"
 
+      - name: Variable pass demo
+        env:
+          START_VALUE: '10'
+        run: |
+          python -m mlops_project.variable_flow --value "$START_VALUE" --output-file artifacts/updated_value.txt
+
+      - name: Reuse updated value
+        run: |
+          UPDATED_VALUE=$(cat artifacts/updated_value.txt)
+          echo "Updated value from previous step: $UPDATED_VALUE"
+          python -m mlops_project.variable_flow --value "$UPDATED_VALUE" --output-file artifacts/updated_value.txt
+
       - name: Train model
         run: python -m mlops_project.train

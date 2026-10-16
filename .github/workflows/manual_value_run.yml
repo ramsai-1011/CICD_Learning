@@ -1,0 +1,39 @@
+name: Manual Value Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_value:
+        description: Value to pass into Python
+        required: true
+        default: '10'
+        type: number
+
+jobs:
+  manual-demo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -e .
+
+      - name: Run script with input value
+        run: |
+          python -m mlops_project.variable_flow --value "${{ inputs.start_value }}" --output-file artifacts/manual_updated_value.txt
+
+      - name: Reuse the new value in a second run
+        run: |
+          UPDATED_VALUE=$(cat artifacts/manual_updated_value.txt)
+          echo "New value from first run: $UPDATED_VALUE"
+          python -m mlops_project.variable_flow --value "$UPDATED_VALUE" --output-file artifacts/manual_updated_value.txt
