@@ -28,5 +28,11 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
+      - name: Check project structure
+        run: |
+          test -d mlops_project
+          test -f requirements.txt
+          echo "Project structure looks valid"
+
       - name: Train model
         run: python -m mlops_project.train
