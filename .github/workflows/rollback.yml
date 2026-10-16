@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version to rollback to (example: v1.2.3 or stable-2024-09-01)
+        description: "Version to rollback to (example: v1.2.3 or stable-2024-09-01)"
         required: true
         default: 'stable'
         type: string
