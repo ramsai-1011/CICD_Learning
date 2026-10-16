@@ -26,8 +26,8 @@ def write_summary(a: int, b: int, output_file: str | None = None) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate two values that must sum to 100.")
-    parser.add_argument("--a", type=int, required=True, help="First input value.")
-    parser.add_argument("--b", type=int, required=True, help="Second input value.")
+    parser.add_argument("--a", type=int, default=100, help="First input value. Default: 100")
+    parser.add_argument("--b", type=int, default=0, help="Second input value. Default: 0")
     parser.add_argument(
         "--output-file",
         default="artifacts/validated_pair.txt",
