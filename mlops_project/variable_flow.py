@@ -4,31 +4,39 @@ import argparse
 from pathlib import Path
 
 
-def update_value(current_value: int, output_file: str) -> int:
-    """Increment the value and persist it for the next workflow step."""
-    next_value = current_value + 1
+def validate_pair(a: int, b: int) -> tuple[int, int]:
+    """Ensure a and b form a valid 100% pair for promotion checks."""
+    total = a + b
+    if total != 100:
+        raise ValueError(
+            f"Invalid inputs: a={a} and b={b} must sum to 100. Got {total}."
+        )
+    return a, b
 
-    output_path = Path(output_file)
+
+def write_summary(a: int, b: int, output_file: str | None = None) -> None:
+    """Persist the validated values for downstream workflow steps."""
+    output_path = Path(output_file) if output_file else Path("artifacts/validated_pair.txt")
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(str(next_value), encoding="utf-8")
+    output_path.write_text(f"a={a}\nb={b}\n total={a + b}\n", encoding="utf-8")
 
-    print(f"Received value: {current_value}")
-    print(f"Updated value saved: {next_value}")
-    print(f"Saved to: {output_path}")
-    return next_value
+    print(f"Validated pair: a={a}, b={b}, total={a + b}")
+    print(f"Saved summary to: {output_path}")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Pass and update a variable across CI steps.")
-    parser.add_argument("--value", type=int, required=True, help="Current value passed from the workflow.")
+    parser = argparse.ArgumentParser(description="Validate two values that must sum to 100.")
+    parser.add_argument("--a", type=int, required=True, help="First input value.")
+    parser.add_argument("--b", type=int, required=True, help="Second input value.")
     parser.add_argument(
         "--output-file",
-        default="artifacts/updated_value.txt",
-        help="File where the next value will be saved.",
+        default="artifacts/validated_pair.txt",
+        help="Optional file to store the validated pair.",
     )
     args = parser.parse_args()
 
-    update_value(args.value, args.output_file)
+    a, b = validate_pair(args.a, args.b)
+    write_summary(a, b, args.output_file)
 
 
 if __name__ == "__main__":
