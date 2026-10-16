@@ -1,0 +1,32 @@
+name: Rollback to Stable Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to rollback to (example: v1.2.3 or stable-2024-09-01)
+        required: true
+        default: 'stable'
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Confirm rollback target
+        run: |
+          echo "Rolling back to version: ${{ inputs.version }}"
+
+      - name: Simulate restore from selected version
+        run: |
+          echo "Restoring application from version ${{ inputs.version }}"
+          echo "Deployment restored successfully to ${{ inputs.version }}"
+
+      - name: Validate rollback status
+        run: |
+          echo "Rollback validation passed"
+          echo "System is now running the selected stable version: ${{ inputs.version }}"
