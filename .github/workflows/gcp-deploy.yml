@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - dev
+      - non-prod
   pull_request:
     branches:
       - main
-      - dev
+      - non-prod
 
 jobs:
   test:
@@ -35,7 +35,7 @@ jobs:
     needs: test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'non-prod' }}
 
     steps:
       - name: Check out code
@@ -44,12 +44,12 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          service_account_key: ${{ github.ref_name == 'main' && secrets.GCP_SERVICE_ACCOUNT_KEY_PROD || secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
-          project_id: ${{ github.ref_name == 'main' && secrets.GCP_PROJECT_ID_PROD || secrets.GCP_PROJECT_ID_DEV }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Deploy Cloud Function
         run: |
-          echo "Deploying to ${{ github.ref_name == 'main' && 'prod' || 'dev' }}"
+          echo "Deploying to ${{ github.ref_name == 'main' && 'prod' || 'non-prod' }}"
           gcloud functions deploy hello-http \
             --runtime python311 \
             --trigger-http \
