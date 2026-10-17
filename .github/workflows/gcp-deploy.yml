@@ -35,6 +35,8 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-latest
     environment: prod
+    permissions:
+      contents: write
     env:
       PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       REGION: us-central1
@@ -42,6 +44,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -69,3 +73,43 @@ jobs:
             --entry-point hello_http \
             --region "$REGION" \
             --project "$PROJECT_ID"
+
+      - name: Calculate next patch version
+        id: version
+        run: |
+          git fetch --tags --force
+          version="$(python - <<'PY'
+          import re
+          import subprocess
+
+          tags = subprocess.check_output(
+              ["git", "tag", "--list"], text=True
+          ).splitlines()
+          versions = [
+              tuple(map(int, match.groups()))
+              for tag in tags
+              if (match := re.fullmatch(r"v(\\d+)\\.(\\d+)\\.(\\d+)", tag))
+          ]
+          if versions:
+              major, minor, patch = max(versions)
+              print(f"v{major}.{minor}.{patch + 1}")
+          else:
+              print("v1.0.0")
+          PY
+          )"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Next release: $version"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          if gh release view "$version" --json tagName >/dev/null 2>&1; then
+            echo "Release $version already exists; leaving it unchanged."
+          else
+            gh release create "$version" \
+              --target "$GITHUB_SHA" \
+              --title "$version" \
+              --generate-notes
+          fi
