@@ -1,0 +1,59 @@
+name: GCP Cloud Function Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-gcp.txt
+          python -m pip install -e .
+
+      - name: Run tests
+        run: python -m pytest -q
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ github.ref_name == 'main' && secrets.GCP_SERVICE_ACCOUNT_KEY_PROD || secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+          project_id: ${{ github.ref_name == 'main' && secrets.GCP_PROJECT_ID_PROD || secrets.GCP_PROJECT_ID_DEV }}
+
+      - name: Deploy Cloud Function
+        run: |
+          echo "Deploying to ${{ github.ref_name == 'main' && 'prod' || 'dev' }}"
+          gcloud functions deploy hello-http \
+            --runtime python311 \
+            --trigger-http \
+            --allow-unauthenticated \
+            --region us-central1 \
+            --source . \
+            --entry-point hello_http
