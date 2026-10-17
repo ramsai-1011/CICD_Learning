@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - non-prod
   pull_request:
     branches:
       - main
@@ -33,27 +32,40 @@ jobs:
 
   deploy:
     needs: test
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'non-prod' }}
+    environment: prod
+    env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      REGION: us-central1
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          service_account_key: ${{ github.ref_name == 'main' && secrets.GCP_SERVICE_ACCOUNT_KEY_PROD || secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
-          project_id: ${{ github.ref_name == 'main' && secrets.GCP_PROJECT_ID_PROD || secrets.GCP_PROJECT_ID_DEV }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Prepare function source
+        run: |
+          mkdir -p deploy-source
+          cp gcp_function/main.py deploy-source/main.py
+          printf 'functions-framework==3.*\n' > deploy-source/requirements.txt
 
       - name: Deploy Cloud Function
         run: |
-          echo "Deploying to ${{ github.ref_name == 'main' && 'prod' || 'non-prod' }}"
           gcloud functions deploy hello-http \
             --runtime python311 \
             --trigger-http \
             --allow-unauthenticated \
-            --region us-central1 \
-            --source . \
-            --entry-point hello_http
+            --source deploy-source \
+            --entry-point hello_http \
+            --region "$REGION" \
+            --project "$PROJECT_ID"
