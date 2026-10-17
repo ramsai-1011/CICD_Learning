@@ -44,8 +44,8 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ github.ref_name == 'main' && secrets.GCP_SERVICE_ACCOUNT_KEY_PROD || secrets.GCP_SERVICE_ACCOUNT_KEY_DEV }}
+          project_id: ${{ github.ref_name == 'main' && secrets.GCP_PROJECT_ID_PROD || secrets.GCP_PROJECT_ID_DEV }}
 
       - name: Deploy Cloud Function
         run: |

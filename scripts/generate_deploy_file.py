@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 
@@ -10,7 +11,7 @@ def generate_deploy_file() -> None:
 
     payload = {
         "version": "v1.0.0",
-        "environment": "dev",
+        "environment": os.environ.get("DEPLOY_ENVIRONMENT", "non-prod"),
         "generated_by": "github_actions",
         "status": "ready_for_deploy",
     }
