@@ -43,9 +43,9 @@ The manual **Check GCP connection** workflow at `.github/workflows/gcp-connectio
 authenticates with GitHub OIDC and Google Cloud Workload Identity Federation. It does not
 use a downloaded service-account key or deploy resources.
 
-Configure this GitHub Actions repository secret:
-
-- `GCP_PROJECT_ID`: the Google Cloud project ID (not its project number).
+Configure `GCP_PROJECT_ID` as a GitHub Actions repository secret or as a secret in the
+`non-prod` environment (the connection-check job uses that environment). The value must
+be the Google Cloud project ID, not its project number.
 
 The workflow has the provider resource name hard-coded as
 `projects/716459559070/locations/global/workloadIdentityPools/testing-github-action/providers/github-actions`.
