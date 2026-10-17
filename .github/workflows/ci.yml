@@ -2,9 +2,9 @@ name: MLOps CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, non-prod ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, non-prod ]
 
 jobs:
   test:

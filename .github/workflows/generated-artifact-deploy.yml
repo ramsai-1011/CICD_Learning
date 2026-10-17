@@ -4,15 +4,17 @@ on:
   push:
     branches:
       - main
-      - dev
+      - non-prod
   pull_request:
     branches:
       - main
-      - dev
+      - non-prod
 
 jobs:
   validate-and-generate:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_ENVIRONMENT: ${{ github.base_ref == 'main' && 'prod' || github.ref_name == 'main' && 'prod' || 'non-prod' }}
 
     steps:
       - name: Check out code
@@ -24,8 +26,7 @@ jobs:
           python-version: '3.11'
 
       - name: Generate deployment artifact
-        run: |
-          python scripts/generate_deploy_file.py
+        run: python scripts/generate_deploy_file.py
 
       - name: Show generated artifact
         run: |
