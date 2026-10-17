@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     env:
-      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID_PROD }}
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       REGION: us-central1
 
     steps:
@@ -46,12 +46,12 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_PROD }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID_PROD }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Prepare function source
         run: |
